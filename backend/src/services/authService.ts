@@ -5,7 +5,7 @@ import { AppError } from '../utils/AppError';
 
 const signToken = (id: string, email: string) => {
   return jwt.sign({ id, email }, process.env.JWT_SECRET || 'secret_key', {
-    expiresIn: process.env.JWT_EXPIRES_IN || '90d',
+    expiresIn: (process.env.JWT_EXPIRES_IN || '90d') as any,
   });
 };
 
