@@ -43,15 +43,22 @@ export const useEditorStore = create<EditorState>((set, get) => {
       const name = generateRandomName();
       
       const socket = io('http://localhost:5000', {
-        query: { clientId, name }
+        query: { clientId, name },
+        transports: ['websocket', 'polling'],
       });
 
       socket.on('connect', () => {
+        console.log('[WS] Connected to server');
         set({ connected: true });
       });
 
-      socket.on('disconnect', () => {
+      socket.on('disconnect', (reason) => {
+        console.log('[WS] Disconnected:', reason);
         set({ connected: false });
+      });
+
+      socket.on('connect_error', (err) => {
+        console.error('[WS] Connection error:', err.message);
       });
 
       socket.on('remote-operation', (op: CRDTOperation) => {
