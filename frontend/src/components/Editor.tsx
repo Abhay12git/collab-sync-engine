@@ -1,20 +1,20 @@
 import React, { useEffect, useRef } from 'react';
-import MonacoEditor, { OnMount, OnChange } from '@monaco-editor/react';
+import MonacoEditor from '@monaco-editor/react';
 import { useEditorStore } from '../store/useEditorStore';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import type { editor } from 'monaco-editor';
 
 export const Editor: React.FC = () => {
   const { text, insertText, deleteText, updateCursor } = useEditorStore();
-  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const isRemoteUpdate = useRef(false);
 
-  const handleEditorDidMount: OnMount = (editor, monacoInstance) => {
-    editorRef.current = editor;
+  const handleEditorDidMount = (editorInstance: editor.IStandaloneCodeEditor) => {
+    editorRef.current = editorInstance;
 
     // Intercept cursor changes for Presence
-    editor.onDidChangeCursorPosition((e) => {
+    editorInstance.onDidChangeCursorPosition((e) => {
       if (isRemoteUpdate.current) return;
-      const model = editor.getModel();
+      const model = editorInstance.getModel();
       if (model) {
         const offset = model.getOffsetAt(e.position);
         updateCursor(offset);
@@ -22,7 +22,7 @@ export const Editor: React.FC = () => {
     });
   };
 
-  const handleChange: OnChange = (val, ev) => {
+  const handleChange = (value: string | undefined, ev: editor.IModelContentChangedEvent) => {
     if (isRemoteUpdate.current) return;
     
     // Convert Monaco's changes into CRDT index operations

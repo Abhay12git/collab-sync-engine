@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useEditorStore } from './store/useEditorStore';
 import { Editor } from './components/Editor';
 import { Toolbar } from './components/Toolbar';

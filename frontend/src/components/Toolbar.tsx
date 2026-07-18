@@ -1,4 +1,3 @@
-import React from 'react';
 import { useEditorStore } from '../store/useEditorStore';
 import { Users, Code, Activity } from 'lucide-react';
 
