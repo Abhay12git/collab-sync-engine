@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { io, Socket } from 'socket.io-client';
-import { SequenceCRDT, type CRDTOperation } from '@collab-sync-engine/shared';
+import { SequenceCRDT, type CRDTOperation, type Char } from '@collab-sync-engine/shared';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface ActiveUser {
@@ -16,8 +16,9 @@ interface EditorState {
   clientId: string;
   connected: boolean;
   activeUsers: ActiveUser[];
+  documentId: string | null;
   
-  initConnection: () => void;
+  initConnection: (documentId?: string) => void;
   insertText: (index: number, value: string) => void;
   deleteText: (index: number) => void;
   updateCursor: (index: number) => void;
@@ -37,18 +38,20 @@ export const useEditorStore = create<EditorState>((set, get) => {
     clientId,
     connected: false,
     activeUsers: [],
+    documentId: null,
 
-    initConnection: () => {
+    initConnection: (documentId?: string) => {
       if (get().socket) return;
       const name = generateRandomName();
+      const docId = documentId || 'default-doc';
       
       const socket = io('http://localhost:5000', {
-        query: { clientId, name },
+        query: { clientId, name, documentId: docId },
         transports: ['websocket', 'polling'],
       });
 
       socket.on('connect', () => {
-        console.log('[WS] Connected to server');
+        console.log('[WS] Connected to server, document:', docId);
         set({ connected: true });
       });
 
@@ -61,6 +64,21 @@ export const useEditorStore = create<EditorState>((set, get) => {
         console.error('[WS] Connection error:', err.message);
       });
 
+      // Receive initial document state from server
+      socket.on('document-state', (data: { snapshot: { version: number; crdt: Char[] }; ops: any[] }) => {
+        const { crdt } = get();
+        // Load snapshot into CRDT
+        if (data.snapshot.crdt.length > 0) {
+          crdt.struct = data.snapshot.crdt;
+        }
+        // Apply any unmerged operations
+        for (const op of data.ops) {
+          crdt.applyOperation(op);
+        }
+        set({ text: crdt.getText() });
+        console.log('[WS] Document state loaded, chars:', crdt.struct.length);
+      });
+
       socket.on('remote-operation', (op: CRDTOperation) => {
         const { crdt } = get();
         crdt.applyOperation(op);
@@ -71,7 +89,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
         set({ activeUsers: users });
       });
 
-      set({ socket });
+      set({ socket, documentId: docId });
     },
 
     insertText: (index: number, value: string) => {
@@ -103,7 +121,10 @@ export const useEditorStore = create<EditorState>((set, get) => {
 
     disconnect: () => {
       const { socket } = get();
-      if (socket) socket.disconnect();
+      if (socket) {
+        socket.disconnect();
+        set({ socket: null, connected: false, activeUsers: [], documentId: null });
+      }
     }
   };
 });
