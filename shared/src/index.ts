@@ -1,3 +1,3 @@
-export * from './crdt/types';
-export * from './crdt/FractionalIndex';
-export * from './crdt/SequenceCRDT';
+export type { Identifier, Char, CRDTOperation } from './crdt/types';
+export { FractionalIndex } from './crdt/FractionalIndex';
+export { SequenceCRDT } from './crdt/SequenceCRDT';
