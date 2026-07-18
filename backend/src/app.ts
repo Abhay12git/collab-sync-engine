@@ -2,8 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import authRoutes from './api/routes/authRoutes';
+import documentRoutes from './api/routes/documentRoutes';
 import { errorHandler } from './middlewares/errorHandler';
-import { AppError } from './utils/AppError';
 
 const app = express();
 
@@ -22,6 +22,7 @@ app.get('/api/health', (_req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/documents', documentRoutes);
 
 // Global Error Handler
 app.use(errorHandler);
