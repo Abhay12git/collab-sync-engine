@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { io, Socket } from 'socket.io-client';
-import { SequenceCRDT, CRDTOperation } from '@collab-sync-engine/shared';
+import { SequenceCRDT, type CRDTOperation } from '@collab-sync-engine/shared';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface ActiveUser {
