@@ -1,17 +1,19 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useEditorStore } from './store/useEditorStore';
 import { Editor } from './components/Editor';
 import { Toolbar } from './components/Toolbar';
 
 function App() {
   const { initConnection, disconnect } = useEditorStore();
+  const initialized = useRef(false);
 
   useEffect(() => {
-    initConnection();
-    return () => {
-      disconnect();
-    };
-  }, [initConnection, disconnect]);
+    if (!initialized.current) {
+      initialized.current = true;
+      initConnection();
+    }
+    // Don't disconnect on StrictMode unmount — we want the socket to persist
+  }, [initConnection]);
 
   return (
     <div className="w-full h-screen flex flex-col overflow-hidden bg-brand-dark">
