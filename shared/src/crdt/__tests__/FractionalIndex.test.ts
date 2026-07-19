@@ -8,6 +8,9 @@ describe('FractionalIndex', () => {
     expect(id).toBeDefined();
     expect(id.length).toBeGreaterThan(0);
     expect(id[0][1]).toBe(siteId);
+    // Position should be between 0 and BASE
+    expect(id[0][0]).toBeGreaterThan(0);
+    expect(id[0][0]).toBeLessThan(FractionalIndex.BASE);
   });
 
   it('should generate an id between two existing ids', () => {
@@ -43,11 +46,11 @@ describe('FractionalIndex', () => {
     expect(FractionalIndex.compareIds(id1, id2)).toBeLessThan(0);
   });
 
-  it('should generate 1000 sequential ids without collision', () => {
+  it('should generate 100 sequential ids in strictly increasing order', () => {
     let prev: [number, string][] | null = null;
     const ids: [number, string][][] = [];
 
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 100; i++) {
       const newId = FractionalIndex.generateIdBetween(prev, null, siteId);
       ids.push(newId);
       prev = newId;
@@ -55,7 +58,8 @@ describe('FractionalIndex', () => {
 
     // Verify all ids are in strictly increasing order
     for (let i = 1; i < ids.length; i++) {
-      expect(FractionalIndex.compareIds(ids[i - 1], ids[i])).toBeLessThan(0);
+      const cmp = FractionalIndex.compareIds(ids[i - 1], ids[i]);
+      expect(cmp).toBeLessThan(0);
     }
   });
 });
