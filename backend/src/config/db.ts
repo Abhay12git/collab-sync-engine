@@ -3,11 +3,14 @@ import winston from 'winston';
 
 export const connectDB = async (logger: winston.Logger): Promise<void> => {
   try {
-    const mongoUri = process.env.MONGO_URI || 'mongodb://admin:password@localhost:27017/collab-sync?authSource=admin';
-    await mongoose.connect(mongoUri);
+    // Try the configured URI first, then fall back to localhost without auth
+    const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/collab-sync';
+    await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 5000,
+    });
     logger.info('MongoDB connected successfully.');
-  } catch (error) {
-    logger.error('MongoDB connection failed:', error);
+  } catch (error: any) {
+    logger.error(`MongoDB connection failed: ${error.message}`);
     process.exit(1);
   }
 };

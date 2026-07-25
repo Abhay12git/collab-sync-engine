@@ -9,6 +9,19 @@ export interface ActiveUser {
   cursorIndex?: number;
 }
 
+export type SupportedLanguage = 
+  | 'typescript'
+  | 'javascript'
+  | 'python'
+  | 'html'
+  | 'css'
+  | 'json'
+  | 'markdown'
+  | 'go'
+  | 'rust'
+  | 'cpp'
+  | 'java';
+
 interface EditorState {
   socket: Socket | null;
   crdt: SequenceCRDT;
@@ -17,11 +30,15 @@ interface EditorState {
   connected: boolean;
   activeUsers: ActiveUser[];
   documentId: string | null;
+  documentTitle: string;
+  language: SupportedLanguage;
   
   initConnection: (documentId?: string) => void;
   insertText: (index: number, value: string) => void;
   deleteText: (index: number) => void;
   updateCursor: (index: number) => void;
+  setLanguage: (lang: SupportedLanguage) => void;
+  setDocumentTitle: (title: string) => void;
   disconnect: () => void;
 }
 
@@ -39,6 +56,8 @@ export const useEditorStore = create<EditorState>((set, get) => {
     connected: false,
     activeUsers: [],
     documentId: null,
+    documentTitle: 'Untitled Document',
+    language: 'typescript',
 
     initConnection: (documentId?: string) => {
       if (get().socket) return;
@@ -117,6 +136,14 @@ export const useEditorStore = create<EditorState>((set, get) => {
       if (socket) {
         socket.emit('cursor-update', index);
       }
+    },
+
+    setLanguage: (language: SupportedLanguage) => {
+      set({ language });
+    },
+
+    setDocumentTitle: (documentTitle: string) => {
+      set({ documentTitle });
     },
 
     disconnect: () => {

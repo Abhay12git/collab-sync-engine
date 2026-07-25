@@ -10,7 +10,7 @@ const CURSOR_COLORS = [
 ];
 
 export const Editor = () => {
-  const { text, insertText, deleteText, updateCursor, activeUsers, clientId } = useEditorStore();
+  const { text, insertText, deleteText, updateCursor, activeUsers, clientId, language } = useEditorStore();
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<typeof import('monaco-editor') | null>(null);
   const isRemoteUpdate = useRef(false);
@@ -31,7 +31,7 @@ export const Editor = () => {
     });
   };
 
-  const handleChange = (value: string | undefined, ev: editor.IModelContentChangedEvent) => {
+  const handleChange = (_value: string | undefined, ev: editor.IModelContentChangedEvent) => {
     if (isRemoteUpdate.current) return;
     
     const changes = ev.changes;
@@ -122,10 +122,10 @@ export const Editor = () => {
   }, [activeUsers, clientId]);
 
   return (
-    <div className="w-full h-full flex-grow relative rounded-xl overflow-hidden border border-gray-700 shadow-2xl">
+    <div className="w-full h-full flex-grow relative rounded-xl overflow-hidden border border-gray-700/80 shadow-2xl">
       <MonacoEditor
         height="100%"
-        language="typescript"
+        language={language}
         theme="vs-dark"
         value={text}
         options={{
