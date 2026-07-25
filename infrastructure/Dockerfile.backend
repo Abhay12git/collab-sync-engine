@@ -1,0 +1,39 @@
+# Multi-stage Dockerfile for Backend Service
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy monorepo configuration
+COPY package*.json ./
+COPY shared/package*.json ./shared/
+COPY backend/package*.json ./backend/
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code
+COPY shared ./shared
+COPY backend ./backend
+
+# Build shared and backend
+RUN npm run build --workspace=shared
+RUN npm run build --workspace=backend
+
+# Production Stage
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY package*.json ./
+COPY backend/package*.json ./backend/
+COPY shared/package*.json ./shared/
+
+RUN npm ci --only=production
+
+COPY --from=builder /app/shared/dist ./shared/dist
+COPY --from=builder /app/backend/dist ./backend/dist
+
+EXPOSE 5000
+
+CMD ["node", "backend/dist/index.js"]

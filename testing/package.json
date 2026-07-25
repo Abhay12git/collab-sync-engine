@@ -1,0 +1,13 @@
+{
+  "name": "testing",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:load": "artillery run load/artillery-load-test.json"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "artillery": "^2.0.0"
+  }
+}

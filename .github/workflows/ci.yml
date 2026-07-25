@@ -1,30 +1,50 @@
-name: CI
+name: CI Pipeline
 
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ "develop" ]
+    branches: [ main, develop ]
 
 jobs:
-  lint-and-test:
+  build-and-test:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18.x'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm install
-      
-    - name: Lint
-      run: npm run lint
-      
-    # - name: Test Backend
-    #   run: npm test --workspace=backend
-    
-    # - name: Test Frontend
-    #   run: npm test --workspace=frontend
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build shared CRDT library
+        run: npm run build --workspace=shared
+
+      - name: Run CRDT mathematical convergence tests
+        run: npx jest --config shared/jest.config.js
+
+      - name: Build backend workspace
+        run: npm run build --workspace=backend
+
+      - name: Build frontend workspace
+        run: npm run build --workspace=frontend
+
+  docker-check:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Backend Docker Image
+        run: docker build -f infrastructure/Dockerfile.backend -t collab-sync-backend:latest .
+
+      - name: Build Frontend Docker Image
+        run: docker build -f infrastructure/Dockerfile.frontend -t collab-sync-frontend:latest .
