@@ -1,12 +1,21 @@
 import mongoose from 'mongoose';
 import winston from 'winston';
+import dns from 'dns';
 
 export const connectDB = async (logger: winston.Logger): Promise<void> => {
   try {
-    // Try the configured URI first, then fall back to localhost without auth
-    const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/collab-sync';
+    // Set public DNS fallback for Windows SRV record resolution
+    try {
+      dns.setServers(['8.8.8.8', '1.1.1.1']);
+    } catch (_e) {
+      // Ignore if custom DNS is not permitted
+    }
+
+    const mongoUri =
+      process.env.MONGO_URI || 'mongodb://localhost:27017/collab-sync';
+    
     await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 10000,
     });
     logger.info('MongoDB connected successfully.');
   } catch (error: any) {
