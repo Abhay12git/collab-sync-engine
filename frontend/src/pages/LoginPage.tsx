@@ -1,15 +1,23 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { Code } from 'lucide-react';
 
 export const LoginPage = () => {
-  const { login, register } = useAuthStore();
+  const { login, register, isAuthenticated } = useAuthStore();
+  const navigate = useNavigate();
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // If already authenticated, redirect to dashboard
+  if (isAuthenticated) {
+    navigate('/', { replace: true });
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +29,8 @@ export const LoginPage = () => {
       } else {
         await login(email, password);
       }
+      // Navigate to dashboard on success
+      navigate('/', { replace: true });
     } catch (err: any) {
       setError(err.message);
     } finally {

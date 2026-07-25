@@ -8,15 +8,19 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => void;
-  loadFromStorage: () => void;
 }
 
 const API_URL = 'http://localhost:5000/api';
 
+// Load initial state from localStorage synchronously
+const storedToken = localStorage.getItem('token');
+const storedUserStr = localStorage.getItem('user');
+const storedUser = storedUserStr ? JSON.parse(storedUserStr) : null;
+
 export const useAuthStore = create<AuthState>((set) => ({
-  token: null,
-  user: null,
-  isAuthenticated: false,
+  token: storedToken,
+  user: storedUser,
+  isAuthenticated: !!(storedToken && storedUser),
 
   login: async (email: string, password: string) => {
     const res = await fetch(`${API_URL}/auth/login`, {
@@ -52,13 +56,5 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     set({ token: null, user: null, isAuthenticated: false });
-  },
-
-  loadFromStorage: () => {
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
-    if (token && userStr) {
-      set({ token, user: JSON.parse(userStr), isAuthenticated: true });
-    }
   },
 }));
