@@ -8,8 +8,8 @@ COPY package*.json ./
 COPY shared/package*.json ./shared/
 COPY backend/package*.json ./backend/
 
-# Install dependencies
-RUN npm ci --ignore-scripts
+# Install all dependencies for build
+RUN npm install --ignore-scripts
 
 # Copy source code
 COPY shared ./shared
@@ -29,7 +29,7 @@ COPY package*.json ./
 COPY backend/package*.json ./backend/
 COPY shared/package*.json ./shared/
 
-RUN npm ci --only=production
+RUN npm install --omit=dev --ignore-scripts
 
 COPY --from=builder /app/shared/dist ./shared/dist
 COPY --from=builder /app/backend/dist ./backend/dist

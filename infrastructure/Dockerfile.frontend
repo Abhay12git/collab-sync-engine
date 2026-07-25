@@ -7,7 +7,8 @@ COPY package*.json ./
 COPY shared/package*.json ./shared/
 COPY frontend/package*.json ./frontend/
 
-RUN npm ci --ignore-scripts
+# Install all dependencies for build
+RUN npm install --ignore-scripts
 
 COPY shared ./shared
 COPY frontend ./frontend
