@@ -1,4 +1,4 @@
-import { Schema, model, Document as MongooseDocument, Types } from 'mongoose';
+import { Schema, model, Document as MongooseDocument } from 'mongoose';
 
 // Represents a CRDT Operation
 export interface ICrdtOperation {
@@ -8,10 +8,10 @@ export interface ICrdtOperation {
 }
 
 export interface IOperationsLog extends MongooseDocument {
-  documentId: Types.ObjectId;
+  documentId: any;
   version: number;
   operation: ICrdtOperation;
-  userId: Types.ObjectId;
+  userId: any;
   timestamp: Date;
 }
 
@@ -26,10 +26,10 @@ const operationSchema = new Schema<ICrdtOperation>(
 
 const operationsLogSchema = new Schema<IOperationsLog>(
   {
-    documentId: { type: Schema.Types.ObjectId, ref: 'Document', required: true },
+    documentId: { type: Schema.Types.Mixed, required: true },
     version: { type: Number, required: true },
     operation: { type: operationSchema, required: true },
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: Schema.Types.Mixed, required: true },
     timestamp: { type: Date, default: Date.now },
   },
   { timestamps: false }

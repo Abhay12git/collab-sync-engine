@@ -1,7 +1,7 @@
-import { Schema, model, Document as MongooseDocument, Types } from 'mongoose';
+import { Schema, model, Document as MongooseDocument } from 'mongoose';
 
 export interface IDocumentSnapshot extends MongooseDocument {
-  documentId: Types.ObjectId;
+  documentId: any;
   version: number;
   serializedCrdt: Buffer;
   createdAt: Date;
@@ -9,7 +9,7 @@ export interface IDocumentSnapshot extends MongooseDocument {
 
 const documentSnapshotSchema = new Schema<IDocumentSnapshot>(
   {
-    documentId: { type: Schema.Types.ObjectId, ref: 'Document', required: true },
+    documentId: { type: Schema.Types.Mixed, required: true },
     version: { type: Number, required: true },
     serializedCrdt: { type: Buffer, required: true },
   },
