@@ -10,9 +10,10 @@ export class SequenceCRDT {
     this.struct = initialStruct;
   }
 
-  insert(index: number, value: string): CRDTOperation {
-    const prev = index > 0 ? this.struct[index - 1] : null;
-    const next = index < this.struct.length ? this.struct[index] : null;
+  insert(visibleIndex: number, value: string): CRDTOperation {
+    const activeChars = this.struct.filter(c => !c.isDeleted);
+    const prev = visibleIndex > 0 ? activeChars[visibleIndex - 1] : null;
+    const next = visibleIndex < activeChars.length ? activeChars[visibleIndex] : null;
 
     const newId = FractionalIndex.generateIdBetween(
       prev ? prev.id : null,
@@ -21,38 +22,65 @@ export class SequenceCRDT {
     );
 
     const char: Char = { id: newId, value, isDeleted: false };
-    this.struct.splice(index, 0, char);
+    this.insertChar(char);
 
-    return { type: 'insert', char };
+    // Return a cloned operation so callers cannot accidentally mutate internal state via shared references
+    return {
+      type: 'insert',
+      char: {
+        id: newId.map(([pos, site]) => [pos, site]),
+        value: char.value,
+        isDeleted: false,
+      },
+    };
   }
 
-  delete(index: number): CRDTOperation | null {
-    if (index < 0 || index >= this.struct.length) return null;
+  delete(visibleIndex: number): CRDTOperation | null {
+    const activeChars = this.struct.filter(c => !c.isDeleted);
+    if (visibleIndex < 0 || visibleIndex >= activeChars.length) return null;
     
-    const char = this.struct[index];
-    char.isDeleted = true;
+    const targetChar = activeChars[visibleIndex];
+    targetChar.isDeleted = true;
 
-    return { type: 'delete', char };
+    return {
+      type: 'delete',
+      char: {
+        id: targetChar.id.map(([pos, site]) => [pos, site]),
+        value: targetChar.value,
+        isDeleted: true,
+      },
+    };
   }
 
   applyOperation(op: CRDTOperation): void {
+    const char: Char = {
+      id: op.char.id.map(([pos, site]) => [pos, site]),
+      value: op.char.value,
+      isDeleted: op.char.isDeleted,
+    };
+
     if (op.type === 'insert') {
-      this.insertChar(op.char);
+      this.insertChar(char);
     } else if (op.type === 'delete') {
-      this.deleteChar(op.char);
+      this.deleteChar(char);
     }
   }
 
   private insertChar(char: Char): void {
     let left = 0;
     let right = this.struct.length - 1;
-    let mid = 0;
 
     while (left <= right) {
-      mid = Math.floor((left + right) / 2);
+      const mid = Math.floor((left + right) / 2);
       const comp = FractionalIndex.compareIds(this.struct[mid].id, char.id);
       
-      if (comp === 0) return;
+      if (comp === 0) {
+        // Character already exists, update tombstone status
+        if (char.isDeleted) {
+          this.struct[mid].isDeleted = true;
+        }
+        return;
+      }
       if (comp < 0) left = mid + 1;
       else right = mid - 1;
     }
