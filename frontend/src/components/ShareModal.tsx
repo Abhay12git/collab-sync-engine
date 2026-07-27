@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
+import { API_URL } from '../config/api';
 import { Share2, X, UserPlus, Check, AlertCircle } from 'lucide-react';
 
 interface ShareModalProps {
@@ -24,7 +25,7 @@ export const ShareModal = ({ documentId, isOpen, onClose }: ShareModalProps) => 
     setLoading(true);
 
     try {
-      const res = await fetch(`http://localhost:5000/api/documents/${documentId}/share`, {
+      const res = await fetch(`${API_URL}/documents/${documentId}/share`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

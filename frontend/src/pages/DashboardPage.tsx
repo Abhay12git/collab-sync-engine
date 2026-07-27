@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { API_URL } from '../config/api';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { Code, Plus, FileText, LogOut, Clock } from 'lucide-react';
@@ -19,7 +20,7 @@ export const DashboardPage = () => {
 
   const fetchDocuments = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/documents', {
+      const res = await fetch(`${API_URL}/documents`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const json = await res.json();
@@ -40,7 +41,7 @@ export const DashboardPage = () => {
   const handleCreate = async () => {
     setCreating(true);
     try {
-      const res = await fetch('http://localhost:5000/api/documents', {
+      const res = await fetch(`${API_URL}/documents`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

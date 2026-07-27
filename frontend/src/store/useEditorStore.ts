@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { WS_URL } from '../config/api';
 import { io, Socket } from 'socket.io-client';
 import { SequenceCRDT, type CRDTOperation, type Char } from '@collab-sync-engine/shared';
 import { v4 as uuidv4 } from 'uuid';
@@ -64,7 +65,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
       const name = generateRandomName();
       const docId = documentId || 'default-doc';
       
-      const socket = io('http://localhost:5000', {
+      const socket = io(WS_URL, {
         query: { clientId, name, documentId: docId },
         transports: ['websocket', 'polling'],
       });

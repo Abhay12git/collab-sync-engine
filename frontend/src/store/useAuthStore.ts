@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { API_URL } from '../config/api';
 
 interface AuthState {
   token: string | null;
@@ -10,7 +11,7 @@ interface AuthState {
   logout: () => void;
 }
 
-const API_URL = 'http://localhost:5000/api';
+// API_URL imported from ../config/api
 
 // Load initial state from localStorage synchronously
 const storedToken = localStorage.getItem('token');
